@@ -27,7 +27,7 @@ namespace APICatalogo.Controllers
             return produtos;
         }
 
-        [HttpGet("{id:int}", Name="ObterProduto")]
+        [HttpGet("{id:int:min(1)}", Name="ObterProduto")]
 
         public ActionResult<Produto> Get(int id)
         {
