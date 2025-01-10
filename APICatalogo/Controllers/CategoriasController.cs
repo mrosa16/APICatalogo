@@ -12,7 +12,7 @@ namespace APICatalogo.Controllers
     [ApiController]
     public class CategoriasController : ControllerBase
     {
-        private readonly ICategoriaRepository _repository;
+        private readonly IRepository<Categoria> _repository;
         private readonly ILogger _logger;
 
         public CategoriasController(ICategoriaRepository repository, ILogger<CategoriasController> logger)
@@ -21,37 +21,23 @@ namespace APICatalogo.Controllers
             _logger = logger;
         }
 
-        [HttpGet("UsandoFromServices/{nome}")]
-        public ActionResult<string> GetSaudacaoFromServices([FromServices] ImeuServico meuServico,
-                                                             string nome)
-        {
-         return meuServico.Saudacao(nome);
-        }
-        [HttpGet("semUsarFromService/{nome}")]
-        public ActionResult<string> GetSaudacaoSemUsarFromServices(ImeuServico meuServico,
-                                                            string nome)
-        {
-            return meuServico.Saudacao(nome);
-        }
+        //[HttpGet("produtos")]
+        //public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
 
-        [HttpGet("produtos")]
+        //{
+        //    _logger.LogInformation("=====Get api/categorias/produtos ==");
+        //    var categorias = _repository.Categorias
+        //.Include(p => p.Produtos)
+        //.Where(c => c.CategoriaId <= 5)
+        //.ToList();
 
-        public ActionResult<IEnumerable<Categoria>> GetCategoriasProdutos()
-
-        {
-            _logger.LogInformation("=====Get api/categorias/produtos ==");
-            var categorias = _repository.Categorias
-        .Include(p => p.Produtos)
-        .Where(c => c.CategoriaId <= 5)
-        .ToList();
-
-            return Ok(categorias); ;
-        }
+        //    return Ok(categorias); ;
+        //}
 
         [HttpGet]
         public ActionResult<IEnumerable<Categoria>> Get()
         {
-            var categorias = _repository.GetCategorias();
+            var categorias = _repository.GetAll();
             return Ok(categorias);  
         }
         
@@ -60,7 +46,7 @@ namespace APICatalogo.Controllers
         {
             //throw new Exception("Exceção ao retornar a categoria pelo ID");
 
-            var categoria = _repository.GetCategoria(id);
+            var categoria = _repository.Get(c => c.CategoriaId == id);
             _logger.LogInformation($"=====Get api/categoria/id = {id} =");
             if (categoria is null)
             {
@@ -108,14 +94,14 @@ namespace APICatalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var categoria = _repository.GetCategoria(id);
+            var categoria = _repository.Get(c => c.CategoriaId == id);
 
             if (categoria is null)
             {
                 return NotFound("Categoria não localizado");
             }
 
-            var categoriaExcluida = _repository.Delete(id);
+            var categoriaExcluida = _repository.Delete(categoria);
 
             return Ok(categoria);
         }
