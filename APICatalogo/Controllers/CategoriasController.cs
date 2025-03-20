@@ -1,10 +1,14 @@
 ﻿using APICatalogo.Context;
+using APICatalogo.DTO;
+using APICatalogo.DTO.Mappings;
 using APICatalogo.Models;
+using APICatalogo.Pagination;
 using APICatalogo.Repositories;
 using APICatalogo.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 
 namespace APICatalogo.Controllers
 {
@@ -22,14 +26,18 @@ namespace APICatalogo.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Categoria>> Get()
+        public ActionResult<IEnumerable<CategoriaDTO>> Get()
         {
             var categorias = _uof.CategoriaRepository.GetAll();
-            return Ok(categorias);  
+            if(categorias is null)
+                return NotFound();
+
+            var categoriasDto = categorias.ToCategoriaDTOList();
+            return Ok(categoriasDto);  
         }
         
         [HttpGet("{id:int}", Name = "ObterCategoria")]
-        public ActionResult<Categoria> Get(int id)
+        public ActionResult<CategoriaDTO> Get(int id)
         {
             //throw new Exception("Exceção ao retornar a categoria pelo ID");
 
@@ -41,57 +49,88 @@ namespace APICatalogo.Controllers
                 return NotFound("Categoria não encontrada");
             }
 
-            return Ok(categoria);
+            var categoriaDTO = categoria.ToCategoriaDTO();
+
+            return Ok(categoriaDTO);
         }
 
         [HttpPost]
 
-        public ActionResult Post(Categoria categoria) 
+        public ActionResult<CategoriaDTO> Post(CategoriaDTO categoriaDto) 
         {
-            if (categoria == null)
+            if (categoriaDto == null)
             {
                 return BadRequest();
             }
+
+            var categoria = categoriaDto.ToCategoria();
 
             var categoriaCriado = _uof.CategoriaRepository.Create(categoria);
             _uof.Commit();
-            
+
+            var novacategoriaDTO = categoriaCriado.ToCategoriaDTO();
 
             return new CreatedAtRouteResult("ObterCategoria",
-                   new { id = categoria.CategoriaId}, categoria
-                    
+                   new { id = novacategoriaDTO.CategoriaId}, novacategoriaDTO
+
                 );
         }
 
-
-        [HttpPut("{id:int}")]
-       
-        public ActionResult Put(int id, Categoria categoria)
-        {
-            if(id != categoria.CategoriaId)
-            {
-                return BadRequest();
-            }
-
-            _uof.CategoriaRepository.Update(categoria);
-
-            return Ok(categoria);
-        }
-
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public ActionResult<CategoriaDTO> Delete(int id)
         {
             var categoria = _uof.CategoriaRepository.Get(c => c.CategoriaId == id);
 
             if (categoria is null)
             {
-                return NotFound("Categoria não localizado");
+                _logger.LogWarning($"Categoria com id={id} não encontrada...");
+                return NotFound($"Categoria com id={id} não encontrada...");
             }
 
             var categoriaExcluida = _uof.CategoriaRepository.Delete(categoria);
             _uof.Commit();
 
-            return Ok(categoria);
+            var categoriaExcluidaDto = categoriaExcluida.ToCategoriaDTO();
+
+            return Ok(categoriaExcluidaDto);
+            }
+        [HttpPut("{id:int}")]
+        public ActionResult<CategoriaDTO> Put(int id, CategoriaDTO categoriaDto)
+        {
+            if (id != categoriaDto.CategoriaId)
+            {
+                _logger.LogWarning($"Dados inválidos...");
+                return BadRequest("Dados inválidos");
+            }
+
+            var categoria = categoriaDto.ToCategoria();
+
+            var categoriaAtualizada = _uof.CategoriaRepository.Update(categoria);
+            _uof.Commit();
+
+            var categoriaAtualizadaDto = categoriaAtualizada.ToCategoriaDTO();
+
+            return Ok(categoriaAtualizadaDto);
+        }
+        [HttpGet("pagination")]
+        public ActionResult<IEnumerable<CategoriaDTO>> Get([FromQuery] CategoriasParameters categoriasParameters)
+        {
+            var categorias = _uof.CategoriaRepository.GetCategorias(categoriasParameters);
+            var metadata = new { 
+                categorias.TotalCount,
+                categorias.PageSize,
+                categorias.CurrentPage,
+                categorias.TotalPages,
+                categorias.HasNext,
+                categorias.HasPrevious,
+            };
+
+            Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+            var categoriaDTO = categorias.ToCategoriaDTOList();
+
+            return Ok(categoriaDTO);
+
         }
     }
 }
