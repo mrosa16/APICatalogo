@@ -24,6 +24,8 @@ builder.Services.AddControllers(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAuthentication();
+builder.Services.AddAuthentication("Bearer").AddJwtBearer();
 builder.Services.AddTransient<ImeuServico, MeuServico>();
 builder.Services.Configure<ApiBehaviorOptions>(options => {
     options.DisableImplicitFromServicesParameters = true;

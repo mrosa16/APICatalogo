@@ -1,12 +1,13 @@
 ﻿using APICatalogo.Models;
 using APICatalogo.Pagination;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using X.PagedList;
 
 namespace APICatalogo.Repositories
 {
     public interface ICategoriaRepository :IRepository<Categoria>
     {
-        PagedList<Categoria> GetCategorias(CategoriasParameters categoriasParams);
-        PagedList<Categoria> GetCategoriasFiltroNome(CategoriasFiltroNome categeriaParams);
+        Task<IPagedList<Categoria>> GetCategoriasAsync(CategoriasParameters categoriasParams);
+        Task<IPagedList<Categoria>> GetCategoriasFiltroNomeAsync(CategoriasFiltroNome categeriaParams);
     }
 }
