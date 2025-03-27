@@ -1161,3 +1161,17 @@ FROM `Categorias` AS `c`
 WHERE `c`.`CategoriaId` = @__id_0
 LIMIT 1
 Information: 0 - =====Get api/categoria/id = 2 =
+Information: 14 - Now listening on: http://localhost:5067
+Information: 0 - Application started. Press Ctrl+C to shut down.
+Information: 0 - Hosting environment: Development
+Information: 0 - Content root path: C:\Users\micha\OneDrive\Computador Pessoal\estudos\.net\APICatalogo\APICatalogo
+Warning: 3 - Failed to determine the https port for redirect.
+Information: 20101 - Executed DbCommand (36ms) [Parameters=[@__id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+SELECT `c`.`CategoriaId`, `c`.`ImagemUrl`, `c`.`Nome`
+FROM `Categorias` AS `c`
+WHERE `c`.`CategoriaId` = @__id_0
+LIMIT 1
+Information: 0 - =====Get api/categoria/id = 1 =
+Information: 20101 - Executed DbCommand (15ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+SELECT `c`.`CategoriaId`, `c`.`ImagemUrl`, `c`.`Nome`
+FROM `Categorias` AS `c`
